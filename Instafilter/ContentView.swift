@@ -20,6 +20,8 @@ struct ContentView: View {
     @State private var showingFilterSheet = false
     @State private var processedImage: UIImage? //after filter applied
 
+    @State private var showAlert = false
+
     let context = CIContext()
 
     var body: some View {
@@ -93,6 +95,10 @@ struct ContentView: View {
                     .cancel()
                 ])
             }
+            .alert(isPresented: $showAlert) {
+                Alert(title: Text("Missing Image"), message: Text("You need to select an image to save."), dismissButton: .default(Text("OK")))
+
+            }
         }
     }
 
@@ -132,8 +138,17 @@ struct ContentView: View {
 
     func saveImageToLibrary() {
 
+        /*
+           Challenge 1 - Try making the Save button show an error if there was no image in the image view.
+        */
+
         //Save the picture
-        guard let processedImage = self.processedImage else { return }
+        guard let processedImage = self.processedImage else {
+
+            print("You must select an image first you donkey!")
+            showAlert = true
+            return
+        }
 
         let imageSaver = ImageSaver()
 
