@@ -14,6 +14,7 @@ struct ContentView: View {
 
     @State private var image: Image? //displayed in view
     @State private var filterIntensity = 0.5
+    @State private var filterRadius = 0.5
     @State private var showingImagePicker = false
     @State private var inputImage: UIImage? //selected from library before processing
     @State private var currentFilter: CIFilter = CIFilter.sepiaTone()
@@ -47,6 +48,16 @@ struct ContentView: View {
             }
         )
 
+        let radius = Binding<Double>(
+            get: {
+                self.filterRadius
+            },
+            set: {
+                self.filterRadius = $0
+                self.applyProcessing()
+            }
+        )
+
         return NavigationView {
             VStack {
                 ZStack {
@@ -69,11 +80,31 @@ struct ContentView: View {
                     self.showingImagePicker = true
                 }
 
-                HStack {
-                    Text("Intensity")
-                    Slider(value: intensity)
+                /*
+                 Challenge 3 - Experiment with having more than one slider, to control each of the input keys you care about. For example, you might have one for radius and one for intensity.
+                 */
+
+                if selectedFilterName == FilterName.edges.rawValue ||
+                    selectedFilterName == FilterName.sepia.rawValue ||
+                    selectedFilterName == FilterName.pixellate.rawValue ||
+                    selectedFilterName == FilterName.unSharpMask.rawValue ||
+                    selectedFilterName == FilterName.vignette.rawValue {
+                    HStack {
+                        Text("Intensity")
+                        Slider(value: intensity)
+                    }
+                    .padding(.vertical)
                 }
-                .padding(.vertical)
+                if selectedFilterName == FilterName.vignette.rawValue ||
+                    selectedFilterName == FilterName.gaussianBlur.rawValue ||
+                    selectedFilterName == FilterName.crystallize.rawValue ||
+                    selectedFilterName == FilterName.unSharpMask.rawValue {
+                    HStack {
+                            Text("Radius   ")
+                            Slider(value: radius)
+                    }
+                    .padding(.bottom)
+                }
 
                 HStack {
                     Button("\(selectedFilterName)") {
@@ -134,9 +165,15 @@ struct ContentView: View {
     func applyProcessing() {
         //Caters for all Filters by searching if they contain these keys
         let inputKeys = currentFilter.inputKeys
-        if inputKeys.contains(kCIInputIntensityKey) { currentFilter.setValue(filterIntensity, forKey: kCIInputIntensityKey) }
-        if inputKeys.contains(kCIInputRadiusKey) { currentFilter.setValue(filterIntensity * 200, forKey: kCIInputRadiusKey) }
-        if inputKeys.contains(kCIInputScaleKey) { currentFilter.setValue(filterIntensity * 10, forKey: kCIInputScaleKey) }
+        if inputKeys.contains(kCIInputIntensityKey) { currentFilter.setValue(filterIntensity, forKey: kCIInputIntensityKey)
+            print("This filter: \(selectedFilterName) uses input intensity key")
+        }
+        if inputKeys.contains(kCIInputRadiusKey) { currentFilter.setValue(filterRadius * 200, forKey: kCIInputRadiusKey)
+                   print("This filter: \(selectedFilterName) uses radius key")
+               }
+        if inputKeys.contains(kCIInputScaleKey) { currentFilter.setValue(filterIntensity * 100, forKey: kCIInputScaleKey)
+            print("This filter: \(selectedFilterName) uses scale key")
+        }
 
         guard let outputImage = currentFilter.outputImage else { return }
 
